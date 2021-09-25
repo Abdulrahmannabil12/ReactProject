@@ -1,11 +1,11 @@
 
 import React from "react";
 import Header from "./ui/header/header";
+import Home from "./ui/Home/home";
 import theme from "./ui/Theme";
 import { MuiThemeProvider } from "@material-ui/core/styles";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-
-function App() {
+ function App() {
   return (
     <>
       <MuiThemeProvider theme={theme}>
@@ -13,18 +13,18 @@ function App() {
           <Header />
           <Switch>
             <Route exact path="/"
-              component={() => { return (<div> Home </div>) }} 
+              component={Home} 
               />
             <Route exact path="/Services"
               component={() => { return (<div> Services </div>) }} 
               />
-            <Route exact path="/Custom Software"
+            <Route exact path="/Custom-Software"
               component={() => { return (<div> Custom Software </div>) }} 
               />
-            <Route exact path="/Mobile Application"
+            <Route exact path="/Mobile-Application"
               component={() => { return (<div> Mobile Application </div>) }}
               />
-            <Route exact path="/Websites Application"
+            <Route exact path="/Websites-Application"
               component={() => { return (<div> Websites Application</div>) }}
               />
             <Route exact path="/Revolution"
