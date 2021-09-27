@@ -31,13 +31,7 @@ function ElevationScroll(props) {
     elevation: trigger ? 4 : 0,
   });
 }
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-}
-
+ 
 export default function Header(props) {
   const theme = useTheme();
   const iOS =
@@ -47,13 +41,16 @@ export default function Header(props) {
   const headerClasses = useStylesHeader();
   const [openDrawer, setOpenDrawer] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
-  const [value, setValue] = useState(0);
+ /* const [value, setValue] = useState(0);
+   const [selectedIndex, setSelectedIndex] = useState(0);
+
+ */
+
   const handleChange = (e, newValue) => {
-    setValue(newValue);
+    props.setValue(newValue);
   };
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -66,7 +63,7 @@ export default function Header(props) {
   const handleMenuItemClick = (e, i) => {
     setAnchorEl(null);
     setOpenMenu(false);
-    setSelectedIndex(i);
+    props.setSelectedIndex(i);
   };
   const routes = [
     { name: "Home", link: "/", activeIndex: 0 },
@@ -76,11 +73,11 @@ export default function Header(props) {
       activeIndex: 1,
       ariaOwns: anchorEl ? "simple-menu" : undefined,
       ariaPopup: anchorEl ? "true" : undefined,
-      mouseOver: event => handleMenuClick(event)
+      mouseOver: (event) => handleMenuClick(event),
     },
     { name: "The Revolution", link: "/revolution", activeIndex: 2 },
     { name: "About Us", link: "/about", activeIndex: 3 },
-    { name: "Contact Us", link: "/contact", activeIndex: 4 }
+    { name: "Contact Us", link: "/contact", activeIndex: 4 },
   ];
 
   const menuOptions = [
@@ -111,123 +108,48 @@ export default function Header(props) {
   ];
 
   useEffect(() => {
-    switch (window.location.pathname) {
-      case "/":
-        if (value !== 0) {
-          setValue(0);
-        }
-        break;
-      case "/Services":
-        console.log("da");
-
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(0);
-        }
-        break;
-      case "/Custom-Software":
-        console.log("da");
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(1);
-        }
-        break;
-      case "/Mobile-Application":
-        console.log("da");
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(2);
-        }
-        break;
-      case "/Websites-Application":
-        console.log("da");
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(3);
-        }
-        break;
-      case "/Revolution":
-        console.log("da");
-        if (value !== 2) {
-          setValue(2);
-        }
-        break;
-      case "/About":
-        if (value !== 3) {
-          setValue(3);
-        }
-        break;
-      case "/Contact":
-        if (value !== 4) {
-          setValue(4);
-        }
-        break;
-      case "/Estimate":
-        if (value !== 5) {
-          setValue(5);
-        }
-        break;
-
-      default:
-        break;
-    }
-  }, [value, selectedIndex]);
+    [...menuOptions, ...routes].forEach((route) => {
+      switch (window.location.pathname) {
+        case `${route.link}`:
+          if (props.value !== route.activeIndex) {
+            props.setValue(route.activeIndex);
+            if (
+              route.selectedIndex &&
+              route.selectedIndex !== props.selectedIndex
+            ) {
+              props.setSelectedIndex(route.selectedIndex);
+            }
+          }
+          break;
+        case "/estimate":
+          props.setValue(5);
+          break;
+        default:
+          break;
+      }
+    });
+  }, [props.value, menuOptions, props.selectedIndex, routes]);
   const tabs = (
     <>
       <Tabs
-        value={value}
+        value={props.value}
         className={headerClasses.tabContainer}
         onChange={handleChange}
         aria-label="basic tabs example"
         indicatorColor="primary"
       >
-        <Tab
-          className={headerClasses.tab}
-          component={Link}
-          to="/"
-          label="Home"
-          {...a11yProps(0)}
-        />
-
-        <Tab
-          aria-controls="simple-menu"
-          aria-haspopup={anchorEl ? "true" : undefined}
-          aria-owns={anchorEl ? "simple-menu" : undefined}
-          aria-expanded={openMenu ? "true" : undefined}
-          onMouseOver={(e) => {
-            handleMenuClick(e);
-          }}
-          onClick={(e) => {
-            handleMenuClick(e);
-          }}
-          className={headerClasses.tab}
-          label="Services"
-          {...a11yProps(1)}
-          component={Link}
-          to="/Services"
-        />
-
-        <Tab
-          className={headerClasses.tab}
-          label="The Revolution"
-          {...a11yProps(2)}
-          component={Link}
-          to="/Revolution"
-        />
-        <Tab
-          className={headerClasses.tab}
-          label="About Us"
-          {...a11yProps(3)}
-          component={Link}
-          to="/About"
-        />
-        <Tab
-          className={headerClasses.tab}
-          label="Contact Us"
-          {...a11yProps(4)}
-          component={Link}
-          to="/Contact"
-        />
+               {routes.map((route, index) => (
+          <Tab
+            key={`${route}${index}`}
+            className={headerClasses.tab}
+            component={Link}
+            to={route.link}
+            label={route.name}
+            aria-owns={route.ariaOwns}
+            aria-haspopup={route.ariaPopup}
+            onMouseOver={route.mouseOver}
+          />
+        ))}
       </Tabs>
       <Button
         variant="contained"
@@ -246,19 +168,21 @@ export default function Header(props) {
         MenuListProps={{ onMouseLeave: handleMenuClose }}
         classes={{ paper: headerClasses.menu }}
         elevation={0}
+        style={{ zIndex: 1302 }}
+        keepMounted
       >
-        {menuOptions.map((option, i) => (
+        {menuOptions.map((option, index) => (
           <MenuItem
-            key={`${option}${i}`}
+            key={`${option}${index}`}
             component={Link}
             to={option.link}
             classes={{ root: headerClasses.menuItem }}
             onClick={(event) => {
-              handleMenuItemClick(event, i);
-              setValue(1);
+              handleMenuItemClick(event, index);
+              props.setValue(1);
               handleMenuClose();
             }}
-            selected={i === selectedIndex && value === 1}
+            selected={index === props.selectedIndex && props.value === 1}
           >
             {option.name}
           </MenuItem>
@@ -267,8 +191,9 @@ export default function Header(props) {
     </>
   );
   const drawer = (
-    < >
+    <>
       <SwipeableDrawer
+        anchor="right"
         disableBackdropTransition={!iOS}
         disableDiscovery={iOS}
         open={openDrawer}
@@ -278,21 +203,24 @@ export default function Header(props) {
       >
         <div className={headerClasses.toolbarMargin} />
         <List disablePadding>
-          {routes.map(route => (
+          {routes.map((route) => (
             <ListItem
               divider
               key={`${route}${route.activeIndex}`}
               button
               component={Link}
               to={route.link}
-              selected= {value === route.activeIndex}
+              selected={props.value === route.activeIndex}
               classes={{ selected: headerClasses.drawerItemSelected }}
               onClick={() => {
                 setOpenDrawer(false);
-                setValue(route.activeIndex);
+                props.setValue(route.activeIndex);
               }}
             >
-              <ListItemText className={headerClasses.drawerItem} disableTypography>
+              <ListItemText
+                className={headerClasses.drawerItem}
+                disableTypography
+              >
                 {route.name}
               </ListItemText>
             </ListItem>
@@ -300,19 +228,22 @@ export default function Header(props) {
           <ListItem
             onClick={() => {
               setOpenDrawer(false);
-              setValue(5);
+              props.setValue(5);
             }}
             divider
             button
             component={Link}
             classes={{
               root: headerClasses.drawerItemEstimate,
-              selected: headerClasses.drawerItemSelected
+              selected: headerClasses.drawerItemSelected,
             }}
             to="/estimate"
-            selected={value === 5}
+            selected={props.value === 5}
           >
-            <ListItemText className={headerClasses.drawerItem} disableTypography>
+            <ListItemText
+              className={headerClasses.drawerItem}
+              disableTypography
+            >
               Free Estimate
             </ListItemText>
           </ListItem>
@@ -324,23 +255,21 @@ export default function Header(props) {
         disableRipple
       >
         <MenuIcon className={headerClasses.drawerIcon} />
-        
       </IconButton>
-   
-    </ >
+    </>
   );
 
   return (
     <>
       <ElevationScroll>
-        <AppBar position="fixed" color="primary">
+        <AppBar position="fixed" color="primary" className={headerClasses.appbar}>
           <Toolbar disableGutters>
             <Button
               component={Link}
               to="/"
               className={headerClasses.logoContainer}
               onClick={() => {
-                setValue(0);
+                props.setValue(0);
               }}
               disableRipple
             >
